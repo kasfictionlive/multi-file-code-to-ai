@@ -2,13 +2,17 @@
   "name": "multi-file-code-to-ai",
   "displayName": "Multi-File Code to AI",
   "description": "Creates a prompt for easy copy and pasting from select files of your codebase.",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.90.0"
   },
   "categories": [
     "Other"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kasfictionlive/multi-file-code-to-ai"
+  },
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
