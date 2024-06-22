@@ -161,17 +161,21 @@ async function generatePrompt(item: PromptItem) {
 	if (!prompt) return;
 
 	const workspaceRoot = vscode.workspace.workspaceFolders?.[0].uri.fsPath || '';
-	let generatedPrompt = `Instruction: ${prompt.instruction}\n\nFiles:\n`;
+	let generatedPrompt = `# ${prompt.name}\n\n## Instructions\n\n${prompt.instruction}\n\n## Files\n\n`;
+
 	for (const file of prompt.files) {
-		generatedPrompt += `${file}\n`;
+		generatedPrompt += `### ${file}\n\n`;
 		try {
 			const absolutePath = path.join(workspaceRoot, file);
 			const content = fs.readFileSync(absolutePath, 'utf8');
-			generatedPrompt += `Content:\n${content}\n\n`;
+			generatedPrompt += `\`\`\`\n${content}\n\`\`\`\n\n`;
 		} catch (err) {
 			console.error(`Error reading file ${file}: ${err}`);
+			generatedPrompt += `Error reading file: ${err}\n\n`;
 		}
 	}
+
+	generatedPrompt += "---\n\nEnd of prompt";
 
 	vscode.env.clipboard.writeText(generatedPrompt);
 	vscode.window.showInformationMessage('Prompt generated and copied to clipboard!');

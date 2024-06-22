@@ -2,7 +2,7 @@
   "name": "multi-file-code-to-ai",
   "displayName": "Multi-File Code to AI",
   "description": "Creates a prompt for easy copy and pasting from select files of your codebase.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -86,6 +86,7 @@
       ]
     }
   },
+  "publisher": "Dulst",
   "scripts": {
     "vscode:prepublish": "npm run package",
     "compile": "webpack",
