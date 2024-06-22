@@ -1,0 +1,8 @@
+{
+  "name": "hey file",
+  "instruction": "asdf",
+  "files": [
+    "/Users/aaa/Documents/projects/multi-file-code-to-ai/CHANGELOG.md",
+    "/Users/aaa/Documents/projects/multi-file-code-to-ai/vsc-extension-quickstart.md"
+  ]
+}

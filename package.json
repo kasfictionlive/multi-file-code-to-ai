@@ -1,0 +1,125 @@
+{
+  "name": "multi-file-code-to-ai",
+  "displayName": "Multi-File Code to AI",
+  "description": "Creates a prompt for easy copy and pasting from select files of your codebase.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "promptEditor",
+        "displayName": "Prompt Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.prompt"
+          }
+        ]
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "promptsExplorer",
+          "title": "Prompts Explorer",
+          "icon": "resources/prompt-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "promptsExplorer": [
+        {
+          "id": "promptsList",
+          "name": "Prompts"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "extension.showPromptQuickPick",
+        "title": "Show Prompts"
+      },
+      {
+        "command": "extension.addNewPrompt",
+        "title": "Add New Prompt",
+        "icon": "$(add)"
+      },
+      {
+        "command": "extension.editPrompt",
+        "title": "Edit Prompt",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "extension.deletePrompt",
+        "title": "Delete Prompt",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "extension.generatePrompt",
+        "title": "Generate Prompt",
+        "icon": "$(play)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "extension.addNewPrompt",
+          "when": "view == promptsList",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "extension.editPrompt",
+          "when": "view == promptsList",
+          "group": "inline"
+        },
+        {
+          "command": "extension.deletePrompt",
+          "when": "view == promptsList",
+          "group": "inline"
+        },
+        {
+          "command": "extension.generatePrompt",
+          "when": "view == promptsList",
+          "group": "inline"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.90.0",
+    "@types/mocha": "^10.0.3",
+    "@types/node": "18.x",
+    "@typescript-eslint/eslint-plugin": "^6.9.0",
+    "@typescript-eslint/parser": "^6.9.0",
+    "eslint": "^8.52.0",
+    "glob": "^10.3.10",
+    "mocha": "^10.2.0",
+    "typescript": "^5.2.2",
+    "ts-loader": "^9.5.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "@vscode/test-electron": "^2.3.6"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}

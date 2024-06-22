@@ -1,0 +1,10 @@
+{
+  "name": "new prompt",
+  "instruction": "asdf",
+  "files": [
+    "/Users/aaa/Documents/projects/proxima/src/cards/region/Japan 17229446.yml",
+    "/Users/aaa/Documents/projects/proxima/src/cards/region/Germany 17229544.yml",
+    "/Users/aaa/Documents/projects/proxima/src/cards/region/America America.yml",
+    "/Users/aaa/Documents/projects/proxima/src/cards/region/China 17219125.yml"
+  ]
+}
