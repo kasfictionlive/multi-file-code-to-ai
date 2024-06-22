@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as yaml from 'js-yaml';
 
 interface Prompt {
 	name: string;
@@ -52,8 +53,19 @@ class PromptItem extends vscode.TreeItem {
 export function activate(context: vscode.ExtensionContext) {
 	extensionContext = context;
 
+	// Ensure .vscode/prompt directory exists
+	const workspaceRoot = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+	if (!workspaceRoot) {
+		vscode.window.showErrorMessage('No workspace folder open');
+		return;
+	}
+	const promptsFolder = path.join(workspaceRoot, '.vscode', 'prompt');
+	if (!fs.existsSync(promptsFolder)) {
+		fs.mkdirSync(promptsFolder, { recursive: true });
+	}
+
 	// Load saved prompts
-	prompts = context.globalState.get('savedPrompts', []);
+	loadPrompts(promptsFolder);
 
 	const promptsProvider = new PromptsProvider();
 	vscode.window.registerTreeDataProvider('promptsList', promptsProvider);
@@ -67,24 +79,32 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	// Watch for changes in prompt files
-	const promptsFolder = path.join(extensionContext.extensionPath, 'prompts');
-	if (!fs.existsSync(promptsFolder)) {
-		fs.mkdirSync(promptsFolder);
-	}
-	const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(promptsFolder, '*.json'));
+	const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(promptsFolder, '*.yml'));
 	context.subscriptions.push(watcher);
 
 	watcher.onDidChange(async (uri) => {
-		const promptName = path.basename(uri.fsPath, '.json');
+		const promptName = path.basename(uri.fsPath, '.yml');
 		const content = await vscode.workspace.fs.readFile(uri);
-		const updatedPrompt: Prompt = JSON.parse(content.toString());
+		const updatedPrompt: Prompt = yaml.load(content.toString()) as Prompt;
 		const index = prompts.findIndex(p => p.name === promptName);
 		if (index !== -1) {
 			prompts[index] = updatedPrompt;
-			await savePrompts();
 			promptsProvider.refresh();
 		}
 	});
+}
+
+function loadPrompts(promptsFolder: string) {
+	prompts = [];
+	const files = fs.readdirSync(promptsFolder);
+	for (const file of files) {
+		if (path.extname(file) === '.yml') {
+			const filePath = path.join(promptsFolder, file);
+			const content = fs.readFileSync(filePath, 'utf8');
+			const prompt = yaml.load(content) as Prompt;
+			prompts.push(prompt);
+		}
+	}
 }
 
 async function addNewPrompt(provider: PromptsProvider) {
@@ -96,7 +116,7 @@ async function addNewPrompt(provider: PromptsProvider) {
 
 	const newPrompt: Prompt = { name, instruction, files: [] };
 	prompts.push(newPrompt);
-	await savePrompts();
+	await savePrompt(newPrompt);
 	provider.refresh();
 	editPrompt(name, provider);
 }
@@ -105,10 +125,14 @@ async function editPrompt(promptName: string, provider: PromptsProvider) {
 	const prompt = prompts.find(p => p.name === promptName);
 	if (!prompt) return;
 
-	const promptsFolder = path.join(extensionContext.extensionPath, 'prompts');
-	const filePath = path.join(promptsFolder, `${promptName}.json`);
+	const workspaceRoot = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+	if (!workspaceRoot) return;
 
-	fs.writeFileSync(filePath, JSON.stringify(prompt, null, 2));
+	const promptsFolder = path.join(workspaceRoot, '.vscode', 'prompt');
+	const filePath = path.join(promptsFolder, `${promptName}.yml`);
+
+	const yamlContent = yaml.dump(prompt);
+	fs.writeFileSync(filePath, yamlContent);
 
 	const document = await vscode.workspace.openTextDocument(filePath);
 	await vscode.window.showTextDocument(document);
@@ -118,12 +142,14 @@ async function deletePrompt(item: PromptItem, provider: PromptsProvider) {
 	const confirm = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: `Are you sure you want to delete "${item.label}"?` });
 	if (confirm === 'Yes') {
 		prompts = prompts.filter(p => p.name !== item.label);
-		await savePrompts();
 		provider.refresh();
 		vscode.window.showInformationMessage(`Prompt "${item.label}" deleted`);
 
-		const promptsFolder = path.join(extensionContext.extensionPath, 'prompts');
-		const filePath = path.join(promptsFolder, `${item.label}.json`);
+		const workspaceRoot = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+		if (!workspaceRoot) return;
+
+		const promptsFolder = path.join(workspaceRoot, '.vscode', 'prompt');
+		const filePath = path.join(promptsFolder, `${item.label}.yml`);
 		if (fs.existsSync(filePath)) {
 			fs.unlinkSync(filePath);
 		}
@@ -151,8 +177,15 @@ async function generatePrompt(item: PromptItem) {
 	vscode.window.showInformationMessage('Prompt generated and copied to clipboard!');
 }
 
-async function savePrompts() {
-	await extensionContext.globalState.update('savedPrompts', prompts);
+async function savePrompt(prompt: Prompt) {
+	const workspaceRoot = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+	if (!workspaceRoot) return;
+
+	const promptsFolder = path.join(workspaceRoot, '.vscode', 'prompt');
+	const filePath = path.join(promptsFolder, `${prompt.name}.yml`);
+
+	const yamlContent = yaml.dump(prompt);
+	fs.writeFileSync(filePath, yamlContent);
 }
 
 export function deactivate() { }
