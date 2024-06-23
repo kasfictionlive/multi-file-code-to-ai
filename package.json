@@ -2,7 +2,7 @@
   "name": "multi-file-code-to-ai",
   "displayName": "Multi-File Code to AI",
   "description": "Creates a prompt for easy copy and pasting from select files of your codebase.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "engines": {
     "vscode": "^1.90.0"
   },
